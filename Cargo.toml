@@ -1,0 +1,16 @@
+[package]
+name = "hamlib-client"
+version = "1.0.0"
+authors = ["Luca Cireddu <sardylan@gmail.com>"]
+description = "Simple library that implements a client for Hamlib (rigctld)"
+repository = "https://github.com/sardylan/rust-hamlib-client.git"
+license = "GPL-3"
+keywords = ["hamlib", "rigctl", "tokio", "reqwest"]
+edition = "2021"
+
+[dependencies]
+lazy_static = "1.5.0"
+log = "0.4.22"
+regex = "1.10.6"
+time = "0.3.36"
+tokio = { version = "1.39.3", features = ["full"] }
