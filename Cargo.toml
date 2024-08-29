@@ -4,7 +4,7 @@ version = "1.0.0"
 authors = ["Luca Cireddu <sardylan@gmail.com>"]
 description = "Simple library that implements a client for Hamlib (rigctld)"
 repository = "https://github.com/sardylan/rust-hamlib-client.git"
-license = "GPL-3"
+license = "GPL-3.0-only"
 keywords = ["hamlib", "rigctl", "tokio", "reqwest"]
 edition = "2021"
 
