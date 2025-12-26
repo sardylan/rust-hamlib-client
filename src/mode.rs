@@ -96,7 +96,10 @@ impl FromStr for Mode {
             "SAL" => Ok(Mode::SAL),
             "SAH" => Ok(Mode::SAH),
             "DSB" => Ok(Mode::DSB),
-            _ => Err(RigCtlError::RawDataError(format!("Unable to parse Mode with string \"{}\"", &s))),
+            _ => Err(RigCtlError::RawDataError(format!(
+                "Unable to parse Mode with string \"{}\"",
+                &s
+            ))),
         }
     }
 }
@@ -104,26 +107,26 @@ impl FromStr for Mode {
 impl From<Mode> for adif::Mode {
     fn from(value: Mode) -> Self {
         match value {
-            Mode::USB => { Self::SSB }
-            Mode::LSB => { Self::SSB }
-            Mode::CW => { Self::CW }
-            Mode::CWR => { Self::CW }
-            Mode::RTTY => { Self::RTTY }
-            Mode::RTTYR => { Self::RTTY }
-            Mode::AM => { Self::AM }
-            Mode::FM => { Self::FM }
-            Mode::WFM => { Self::FM }
-            Mode::AMS => { Self::AM }
-            Mode::PKTLSB => { Self::PKT }
-            Mode::PKTUSB => { Self::PKT }
-            Mode::PKTFM => { Self::PKT }
-            Mode::ECSSUSB => { Self::AM }
-            Mode::ECSSLSB => { Self::AM }
-            Mode::FAX => { Self::FAX }
-            Mode::SAM => { Self::AM }
-            Mode::SAL => { Self::AM }
-            Mode::SAH => { Self::AM }
-            Mode::DSB => { Self::AM }
+            Mode::USB => Self::SSB,
+            Mode::LSB => Self::SSB,
+            Mode::CW => Self::CW,
+            Mode::CWR => Self::CW,
+            Mode::RTTY => Self::RTTY,
+            Mode::RTTYR => Self::RTTY,
+            Mode::AM => Self::AM,
+            Mode::FM => Self::FM,
+            Mode::WFM => Self::FM,
+            Mode::AMS => Self::AM,
+            Mode::PKTLSB => Self::PKT,
+            Mode::PKTUSB => Self::PKT,
+            Mode::PKTFM => Self::PKT,
+            Mode::ECSSUSB => Self::AM,
+            Mode::ECSSLSB => Self::AM,
+            Mode::FAX => Self::FAX,
+            Mode::SAM => Self::AM,
+            Mode::SAL => Self::AM,
+            Mode::SAH => Self::AM,
+            Mode::DSB => Self::AM,
         }
     }
 }

@@ -25,32 +25,58 @@ use std::str::FromStr;
 #[derive(Debug, PartialEq)]
 pub struct Response {
     pub query_vfo: VFO,
-    pub mode: Mode,
+    pub mode: Option<Mode>,
     pub passband: u64,
 }
 
 impl Display for Response {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Query VFO: {} - Mode: {} - Passband: {}", self.query_vfo, self.mode, self.passband)
+        write!(
+            f,
+            "Query VFO: {} - Mode: {} - Passband: {}",
+            self.query_vfo,
+            match self.mode {
+                None => "None".to_string(),
+                Some(m) => m.to_string(),
+            },
+            self.passband
+        )
     }
 }
 
 pub fn parse(line: &str) -> Result<Response, RigCtlError> {
     lazy_static! {
-        static ref RE: Regex = Regex::new(r"^get_split_mode: (?P<query_vfo>[a-zA-Z0-9]+)\|TX Mode: (?P<mode>[a-zA-Z0-9]+)\|TX Passband: (?P<passband>[0-9]+)\|RPRT 0$").unwrap();
+        static ref RE: Regex = Regex::new(r"^get_split_mode: (?P<query_vfo>[a-zA-Z0-9]+)\|TX Mode: (?P<mode>[a-zA-Z0-9]*)\|TX Passband: (?P<passband>[0-9]+)\|RPRT 0$").unwrap();
     }
 
-    let captures = RE.captures(&line).ok_or(RigCtlError::ResponseParsing("Unable to capture groups".to_string()))?;
+    let captures = RE.captures(&line).ok_or(RigCtlError::ResponseParsing(
+        "Unable to capture groups".to_string(),
+    ))?;
     log::trace!("Captures: {:?}", &captures);
 
-    let query_vfo = captures.name("query_vfo").ok_or(RigCtlError::ResponseParsing("Invalid query_vfo group".to_string()))?.as_str();
-    let mode = captures.name("mode").ok_or(RigCtlError::ResponseParsing("Invalid mode group".to_string()))?.as_str();
-    let passband = captures.name("passband").ok_or(RigCtlError::ResponseParsing("Invalid passband group".to_string()))?.as_str();
+    let query_vfo = captures
+        .name("query_vfo")
+        .ok_or_else(|| RigCtlError::ResponseParsing("Invalid query_vfo group".to_string()))?
+        .as_str();
+    let mode = captures
+        .name("mode")
+        .ok_or_else(|| RigCtlError::ResponseParsing("Invalid mode group".to_string()))?
+        .as_str();
+    let passband = captures
+        .name("passband")
+        .ok_or_else(|| RigCtlError::ResponseParsing("Invalid passband group".to_string()))?
+        .as_str();
+
+    let query_vfo = VFO::from_str(&query_vfo)?;
+    let mode = Mode::from_str(&mode).ok();
+    let passband = passband
+        .parse::<u64>()
+        .map_err(|e| RigCtlError::ResponseParsing(e.to_string()))?;
 
     Ok(Response {
-        query_vfo: VFO::from_str(&query_vfo)?,
-        mode: Mode::from_str(&mode)?,
-        passband: passband.parse::<u64>().map_err(|e| { RigCtlError::ResponseParsing(e.to_string()) })?,
+        query_vfo,
+        mode,
+        passband,
     })
 }
 
@@ -61,7 +87,24 @@ mod tests {
     #[test]
     fn test_get_vfo_split_enabled() {
         let input = r"get_split_mode: VFOA|TX Mode: PKTUSB|TX Passband: 2400|RPRT 0";
-        let expected = Response { query_vfo: VFO::VFOA, mode: Mode::PKTUSB, passband: 2400u64 };
+        let expected = Response {
+            query_vfo: VFO::VFOA,
+            mode: Some(Mode::PKTUSB),
+            passband: 2400u64,
+        };
+        let actual = parse(input);
+        assert_eq!(actual.is_ok(), true);
+        assert_eq!(actual.unwrap(), expected);
+    }
+
+    #[test]
+    fn test_get_vfo_split_disabled() {
+        let input = r"get_split_mode: VFOA|TX Mode: |TX Passband: 0|RPRT 0";
+        let expected = Response {
+            query_vfo: VFO::VFOA,
+            mode: None,
+            passband: 0u64,
+        };
         let actual = parse(input);
         assert!(actual.is_ok());
         assert_eq!(actual.unwrap(), expected);
